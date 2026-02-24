@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSS-CFS — Access Portal</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      border-radius: 3px;
+      overflow: hidden;
+      border: 1px solid rgba(0,212,255,0.15);
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+    }
+    .auth-tab.active {
+      background: rgba(0,212,255,0.12);
+      color: var(--cyan);
+    }
+    .auth-tab:first-child { border-right: 1px solid rgba(0,212,255,0.15); }
+    .auth-panel { display: none; }
+    .auth-panel.active { display: block; }
+    .success-msg {
+      padding: 8px 12px;
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.25);
+      border-radius: 3px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--radar-green);
+      text-align: center;
+      margin-top: 12px;
+    }
+    .switch-link {
+      margin-top: 14px;
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: .6rem;
+      color: var(--text-muted);
+    }
+    .switch-link span {
+      color: var(--cyan);
+      cursor: pointer;
+      letter-spacing: .05em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <defs>
+            <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="rgba(0,255,136,0.3)" />
+              <stop offset="100%" stop-color="rgba(0,255,136,0)" />
+            </radialGradient>
+          </defs>
+          <circle cx="32" cy="32" r="30" fill="url(#glow)" />
+          <polygon points="32,4 60,56 32,44 4,56"
+            fill="none" stroke="#00ff88" stroke-width="2" stroke-linejoin="round" />
+          <circle cx="32" cy="32" r="4" fill="#00ff88" />
+          <line x1="32" y1="4" x2="32" y2="32" stroke="#00ff88" stroke-width="1" opacity="0.4" />
+        </svg>
+      </div>
+      <div class="login-title">GSS-CFS</div>
+      <div class="login-subtitle">
+        GLOBAL STRATEGIC STABILITY<br>&amp; CONFLICT FORECASTING SYSTEM
+      </div>
+    </div>
+
+    <!-- Tab Switcher: LOGIN | REGISTER -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-login-btn" onclick="switchTab('login')">LOGIN</button>
+      <button class="auth-tab" id="tab-register-btn" onclick="switchTab('register')">REGISTER</button>
+    </div>
+
+    <!-- ── LOGIN PANEL ──────────────────────────────────── -->
+    <div class="auth-panel active" id="panel-login">
+      <form id="login-form">
+        <div class="form-group">
+          <label>OPERATOR EMAIL</label>
+          <input type="email" id="login-email" class="form-control"
+            placeholder="analyst@command.gov" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>ACCESS CODE</label>
+          <input type="password" id="login-password" class="form-control"
+            placeholder="••••••••" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary" id="login-btn">AUTHORIZE ACCESS</button>
+        <div id="login-error" class="error-msg" style="display:none"></div>
+      </form>
+      <div class="switch-link">
+        No account? <span onclick="switchTab('register')">Register here →</span>
+      </div>
+    </div>
+
+    <!-- ── REGISTER PANEL ───────────────────────────────── -->
+    <div class="auth-panel" id="panel-register">
+      <form id="register-form">
+        <div class="form-group">
+          <label>FULL NAME</label>
+          <input type="text" id="reg-name" class="form-control"
+            placeholder="Analyst Name" required />
+        </div>
+        <div class="form-group">
+          <label>EMAIL ADDRESS</label>
+          <input type="email" id="reg-email" class="form-control"
+            placeholder="analyst@command.gov" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>CREATE PASSWORD <span style="color:var(--text-muted);font-size:.55rem">(MIN 8 CHARS)</span></label>
+          <input type="password" id="reg-password" class="form-control"
+            placeholder="••••••••" required minlength="8" autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label>CONFIRM PASSWORD</label>
+          <input type="password" id="reg-confirm" class="form-control"
+            placeholder="••••••••" required autocomplete="new-password" />
+        </div>
+        <button type="submit" class="btn-primary" id="register-btn">CREATE ACCOUNT</button>
+        <div id="register-error"   class="error-msg"   style="display:none"></div>
+        <div id="register-success" class="success-msg" style="display:none"></div>
+      </form>
+      <div class="switch-link">
+        Already registered? <span onclick="switchTab('login')">Login here →</span>
+      </div>
+    </div>
+
+    <div class="login-footer">
+      UNAUTHORIZED ACCESS ATTEMPTS WILL BE LOGGED &amp; REPORTED
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/pages/login.js"></script>
+</body>
+</html>

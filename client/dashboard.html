@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GSS-CFS — Intelligence Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- Axios CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 32 32">
+          <polygon points="16,2 30,28 16,22 2,28"
+            fill="none" stroke="#00ff88" stroke-width="1.5" />
+          <circle cx="16" cy="16" r="2.5" fill="#00ff88" class="radar-pulse" />
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-title">GSS-CFS</div>
+        <div class="logo-subtitle">INTELLIGENCE PLATFORM</div>
+      </div>
+    </div>
+
+    <div class="sidebar-status">
+      <div class="status-line">
+        <div class="dot-blink"></div>
+        <span class="status-label">SYSTEM ONLINE</span>
+      </div>
+      <div class="status-time" id="status-time">—</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" data-page="global">
+        <span class="nav-icon">⬡</span>
+        <div class="nav-text">
+          <div class="nav-label">GLOBAL MAP</div>
+          <div class="nav-sub">Heatmap</div>
+        </div>
+      </div>
+      <div class="nav-item" data-page="country">
+        <span class="nav-icon">◈</span>
+        <div class="nav-text">
+          <div class="nav-label">COUNTRY</div>
+          <div class="nav-sub">Dashboard</div>
+        </div>
+      </div>
+      <div class="nav-item" data-page="compare">
+        <span class="nav-icon">⊞</span>
+        <div class="nav-text">
+          <div class="nav-label">COMPARE</div>
+          <div class="nav-sub">Countries</div>
+        </div>
+      </div>
+      <div class="nav-item" data-page="trends">
+        <span class="nav-icon">⌇</span>
+        <div class="nav-text">
+          <div class="nav-label">TRENDS</div>
+          <div class="nav-sub">Historical</div>
+        </div>
+      </div>
+      <div class="nav-item" data-page="insights">
+        <span class="nav-icon">⚙</span>
+        <div class="nav-text">
+          <div class="nav-label">AI INSIGHTS</div>
+          <div class="nav-sub">Simulator</div>
+        </div>
+      </div>
+      <div class="nav-item" data-page="alerts">
+        <span class="nav-icon">⚠</span>
+        <div class="nav-text">
+          <div class="nav-label">ALERTS</div>
+          <div class="nav-sub">Monitoring</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-name" id="user-name">—</div>
+        <div class="user-role" id="user-role">ANALYST CLEARANCE</div>
+      </div>
+      <button class="sidebar-logout" onclick="Auth.logout()">
+        <span>⏻</span>
+        <span class="logo-text">LOGOUT</span>
+      </button>
+      <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">«</button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════════════════════════════════════ -->
+  <div class="main-content">
+
+    <header class="topbar">
+      <div class="topbar-title">
+        GLOBAL STRATEGIC STABILITY &amp; CONFLICT FORECASTING SYSTEM
+      </div>
+      <div class="topbar-right">
+        <div class="alert-indicator">
+          <div class="dot-blink"></div>
+          <span id="critical-count">— CRITICAL</span>
+        </div>
+        <div class="topbar-time" id="topbar-time">—</div>
+      </div>
+    </header>
+
+    <div class="page-content">
+
+      <!-- ══ PAGE: GLOBAL ══════════════════════════════════════════════════ -->
+      <div class="page active" id="page-global">
+        <div class="page-hdr">
+          <div class="page-title">Global Intelligence Overview</div>
+          <div class="page-subtitle" id="global-subtitle">REAL-TIME CONFLICT RISK — LOADING...</div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid-5 mb-4" id="global-stats">
+          <div class="card card-red"><div class="card-inner">
+            <div class="metric-label">CRITICAL</div>
+            <div class="metric-val red" id="stat-critical">—</div>
+          </div></div>
+          <div class="card card-orange"><div class="card-inner">
+            <div class="metric-label">HIGH RISK</div>
+            <div class="metric-val orange" id="stat-high">—</div>
+          </div></div>
+          <div class="card card-gold"><div class="card-inner">
+            <div class="metric-label">MODERATE</div>
+            <div class="metric-val yellow" id="stat-moderate">—</div>
+          </div></div>
+          <div class="card card-green"><div class="card-inner">
+            <div class="metric-label">LOW RISK</div>
+            <div class="metric-val green" id="stat-low">—</div>
+          </div></div>
+          <div class="card"><div class="card-inner">
+            <div class="metric-label">AVG RISK INDEX</div>
+            <div class="metric-val cyan" id="stat-avg">—</div>
+          </div></div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="global-search"
+            placeholder="SEARCH COUNTRY OR ISO CODE..." />
+          <select class="filter-select" id="global-tier-filter">
+            <option value="">ALL TIERS</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Low">Low</option>
+          </select>
+          <select class="filter-select" id="global-region-filter">
+            <option value="">ALL REGIONS</option>
+            <option value="Americas">Americas</option>
+            <option value="Europe">Europe</option>
+            <option value="Asia">Asia</option>
+            <option value="Middle East">Middle East</option>
+            <option value="Africa">Africa</option>
+          </select>
+          <select class="filter-select" id="global-sort">
+            <option value="risk_desc">HIGHEST RISK</option>
+            <option value="risk_asc">LOWEST RISK</option>
+            <option value="name">A–Z</option>
+          </select>
+        </div>
+
+        <!-- Country Grid -->
+        <div class="grid-auto" id="country-grid">
+          <div class="loading">LOADING INTELLIGENCE DATA...</div>
+        </div>
+      </div><!-- /page-global -->
+
+
+      <!-- ══ PAGE: COUNTRY ═════════════════════════════════════════════════ -->
+      <div class="page" id="page-country">
+        <div class="filter-bar mb-4" style="max-width:400px">
+          <select class="filter-select w-full" id="country-select" style="flex:1">
+            <option value="">— SELECT COUNTRY —</option>
+          </select>
+        </div>
+
+        <div id="country-profile-content">
+          <div class="loading">SELECT A COUNTRY TO VIEW INTELLIGENCE PROFILE</div>
+        </div>
+      </div><!-- /page-country -->
+
+
+      <!-- ══ PAGE: COMPARE ═════════════════════════════════════════════════ -->
+      <div class="page" id="page-compare">
+        <div class="page-hdr">
+          <div class="page-title">Country Comparison Engine</div>
+          <div class="page-subtitle">MULTI-DOMAIN STRATEGIC ANALYSIS — UP TO 4 COUNTRIES</div>
+        </div>
+
+        <div class="card card-inner mb-4" style="padding:16px">
+          <div class="flex gap-3 flex-wrap items-center">
+            <div id="compare-tags" class="flex gap-3 flex-wrap"></div>
+            <div class="flex gap-3">
+              <input type="text" id="compare-input" class="filter-input"
+                placeholder="ISO (e.g. CHN)" maxlength="3" style="width:120px" />
+              <button class="filter-btn" onclick="ComparePage.addCountry()">ADD</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-4 mb-4" id="compare-cards">
+          <div class="loading">ADD COUNTRIES TO COMPARE</div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-inner">
+              <div class="section-hdr"><span>STABILITY RADAR</span></div>
+              <canvas id="compare-radar" height="300"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-inner">
+              <div class="section-hdr"><span>RISK BREAKDOWN</span></div>
+              <canvas id="compare-bar" height="300"></canvas>
+            </div>
+          </div>
+        </div>
+      </div><!-- /page-compare -->
+
+
+      <!-- ══ PAGE: TRENDS ══════════════════════════════════════════════════ -->
+      <div class="page" id="page-trends">
+        <div class="page-hdr">
+          <div class="page-title">Trend Analysis</div>
+          <div class="page-subtitle">HISTORICAL RISK, MILITARY &amp; ECONOMIC INDICATORS</div>
+        </div>
+        <div class="flex gap-3 mb-4 flex-wrap items-center">
+          <select class="filter-select" id="trends-country" style="min-width:200px">
+            <option value="">— SELECT COUNTRY —</option>
+          </select>
+          <div class="flex gap-3">
+            <button class="filter-btn active" data-years="5" onclick="TrendsPage.setYears(this, 5)">5Y</button>
+            <button class="filter-btn" data-years="10" onclick="TrendsPage.setYears(this, 10)">10Y</button>
+          </div>
+        </div>
+        <div class="space-y-4" id="trends-content">
+          <div class="loading">SELECT A COUNTRY TO VIEW TREND DATA</div>
+        </div>
+      </div><!-- /page-trends -->
+
+
+      <!-- ══ PAGE: INSIGHTS ════════════════════════════════════════════════ -->
+      <div class="page" id="page-insights">
+        <div class="page-hdr">
+          <div class="page-title">AI Intelligence Insights</div>
+          <div class="page-subtitle">SCENARIO SIMULATION ENGINE &amp; RISK PROJECTIONS</div>
+        </div>
+        <div class="grid-2">
+          <!-- Scenario Builder -->
+          <div class="card">
+            <div class="card-inner">
+              <div class="section-hdr"><span>SCENARIO SIMULATION</span></div>
+              <div class="form-group mb-4">
+                <label class="metric-label">SELECT TARGET COUNTRY</label>
+                <select class="filter-select w-full" id="sim-country">
+                  <option value="">— SELECT COUNTRY —</option>
+                </select>
+              </div>
+
+              <div class="slider-row">
+                <div class="slider-header">
+                  <span class="slider-name">GDP CHANGE (%)</span>
+                  <span class="slider-val cyan" id="sim-gdp-val">0</span>
+                </div>
+                <input type="range" id="sim-gdp" min="-30" max="30" value="0"
+                  oninput="document.getElementById('sim-gdp-val').textContent = (this.value > 0 ? '+' : '') + this.value" />
+              </div>
+
+              <div class="slider-row">
+                <div class="slider-header">
+                  <span class="slider-name">MILITARY BUDGET CHANGE (%)</span>
+                  <span class="slider-val orange" id="sim-mil-val">0</span>
+                </div>
+                <input type="range" id="sim-mil" min="-20" max="50" value="0"
+                  oninput="document.getElementById('sim-mil-val').textContent = (this.value > 0 ? '+' : '') + this.value" />
+              </div>
+
+              <div class="slider-row">
+                <div class="slider-header">
+                  <span class="slider-name">POLITICAL STABILITY CHANGE</span>
+                  <span class="slider-val yellow" id="sim-pol-val">0</span>
+                </div>
+                <input type="range" id="sim-pol" min="-50" max="50" value="0"
+                  oninput="document.getElementById('sim-pol-val').textContent = (this.value > 0 ? '+' : '') + this.value" />
+              </div>
+
+              <div class="slider-row">
+                <div class="slider-header">
+                  <span class="slider-name">ALLIANCE STRENGTH CHANGE</span>
+                  <span class="slider-val" id="sim-ali-val" style="color:var(--cyan)">0</span>
+                </div>
+                <input type="range" id="sim-ali" min="-50" max="50" value="0"
+                  oninput="document.getElementById('sim-ali-val').textContent = (this.value > 0 ? '+' : '') + this.value" />
+              </div>
+
+              <button class="btn-primary mt-3" onclick="InsightsPage.runSimulation()">
+                ▶ RUN SIMULATION
+              </button>
+            </div>
+          </div>
+
+          <!-- Results -->
+          <div id="sim-results">
+            <div class="card" style="height:100%">
+              <div class="card-inner">
+                <div class="loading">CONFIGURE SCENARIO AND RUN SIMULATION</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- High Alert -->
+        <div class="card mt-4">
+          <div class="card-inner">
+            <div class="section-hdr"><span>ACTIVE HIGH ALERT COUNTRIES</span></div>
+            <div id="insights-alerts"><div class="loading">LOADING...</div></div>
+          </div>
+        </div>
+      </div><!-- /page-insights -->
+
+
+      <!-- ══ PAGE: ALERTS ══════════════════════════════════════════════════ -->
+      <div class="page" id="page-alerts">
+        <div class="page-hdr">
+          <div class="page-title">Alert Monitoring Center</div>
+          <div class="page-subtitle">EARLY WARNING SYSTEM — THRESHOLD-BASED RISK ALERTS</div>
+        </div>
+        <div id="alerts-content"><div class="loading">LOADING ALERTS...</div></div>
+      </div><!-- /page-alerts -->
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /app-shell -->
+
+<!-- Scripts -->
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/components/sidebar.js"></script>
+<script src="js/components/charts.js"></script>
+<script src="js/pages/dashboard.js"></script>
+<script src="js/pages/country.js"></script>
+<script src="js/pages/compare.js"></script>
+<script src="js/pages/trends.js"></script>
+<script src="js/pages/insights.js"></script>
+<script src="js/pages/alerts.js"></script>
+
+</body>
+</html>

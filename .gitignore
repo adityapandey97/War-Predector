@@ -1,0 +1,68 @@
+# Node.js
+node_modules/
+.env
+.DS_Store
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Logs
+logs/
+*.log
+
+# OS
+Thumbs.db
+*.swp
+
+# Build
+/dist
+/build
+
+# Misc
+*.local
+*.sublime-workspace
+*.sublime-project
+
+# Server
+server/node_modules/
+server/.env
+
+# Client
+client/node_modules/
+client/.env
+
+# IDE
+.vscode/
+.idea/
+
+# Test
+coverage/
+
+# Ignore database and sensitive files
+db.sqlite
+*.sqlite
+*.db
+
+# Ignore compiled files
+*.out
+*.exe
+*.dll
+*.class
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore backup files
+*.bak
+*.tmp
+*.temp
+
+# Ignore package-lock
+package-lock.json
+yarn.lock
+
+# Ignore public uploads
+public/uploads/
+
+# Ignore server utils seed file
+server/utils/seed.js
