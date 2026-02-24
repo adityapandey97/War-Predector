@@ -2,7 +2,7 @@
  * GSS-CFS API Service — no authentication headers
  */
 const API = (() => {
-  const BASE = 'http://localhost:4000/api';
+ const BASE_URL = import.meta.env.VITE_API_URL;
 
   async function request(method, path, body = null) {
     const opts = {
