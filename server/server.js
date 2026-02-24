@@ -1,66 +1,57 @@
-require('dotenv').config();
-const express    = require('express');
-const cors       = require('cors');
-const helmet     = require('helmet');
-const morgan     = require('morgan');
-const rateLimit  = require('express-rate-limit');
-const path       = require('path');
+/**
+ * GSS-CFS API Service — Production Ready
+ */
 
-const connectDB       = require('./config/db');
-const logger          = require('./utils/logger');
-const errorMiddleware = require('./middleware/error.middleware');
+const API = (() => {
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
-// Routes — no auth middleware anywhere
-const authRoutes    = require('./routes/auth.routes');
-const countryRoutes = require('./routes/country.routes');
-const riskRoutes    = require('./routes/risk.routes');
-const compareRoutes = require('./routes/compare.routes');
-const alertRoutes   = require('./routes/alert.routes');
+  async function request(method, path, body = null) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+    };
 
-const app  = express();
-const PORT = process.env.PORT || 4000;
+    if (body) opts.body = JSON.stringify(body);
 
-// ── Database ──────────────────────────────────────────────────────────────────
-connectDB();
+    try {
+      const res = await fetch(`${BASE_URL}/api${path}`, opts);
+      const data = await res.json();
 
-// ── Core Middleware ───────────────────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: '*' }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+      if (!res.ok) throw new Error(data.error || 'Request failed');
 
-// ── Rate Limiting (gentle, no auth tiers) ────────────────────────────────────
-app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 1000 }));
-
-// ── Static Client Files ───────────────────────────────────────────────────────
-app.use(express.static(path.join(__dirname, '../client')));
-
-// ── API Routes (all open, no auth required) ───────────────────────────────────
-app.use('/api/auth',      authRoutes);
-app.use('/api/countries', countryRoutes);
-app.use('/api/risk',      riskRoutes);
-app.use('/api/compare',   compareRoutes);
-app.use('/api/alerts',    alertRoutes);
-
-// ── Health Check ──────────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'operational', system: 'GSS-CFS', timestamp: new Date().toISOString() });
-});
-
-// ── SPA fallback ──────────────────────────────────────────────────────────────
-app.get('*', (req, res) => {
-  if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '../client/index.html'));
+      return data;
+    } catch (err) {
+      console.error(`[API] ${method} ${path}:`, err.message);
+      throw err;
+    }
   }
-});
 
-// ── Error Handler ─────────────────────────────────────────────────────────────
-app.use(errorMiddleware);
+  return {
+    login:    (email, password) => request('POST', '/auth/login', { email, password }),
+    register: (payload)         => request('POST', '/auth/register', payload),
 
-// ── Start ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  logger.info(`🚀 GSS-CFS running on http://localhost:${PORT}`);
-});
+    getCountries: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return request('GET', `/countries${qs ? '?' + qs : ''}`);
+    },
 
-module.exports = app;
+    searchCountries: (q)   => request('GET', `/countries/search?q=${encodeURIComponent(q)}`),
+    getProfile:      (iso) => request('GET', `/countries/${iso}/profile`),
+    getStability:    (iso) => request('GET', `/countries/${iso}/stability`),
+    getHistory:      (iso, years = 10) => request('GET', `/countries/${iso}/history?years=${years}`),
+    getMilitary:     (iso) => request('GET', `/countries/${iso}/military`),
+    getEconomic:     (iso) => request('GET', `/countries/${iso}/economic`),
+    getConflicts:    (iso) => request('GET', `/countries/${iso}/conflict-history`),
+
+    getHeatmap:      ()        => request('GET', '/risk/heatmap'),
+    getHighAlert:    ()        => request('GET', '/risk/high-alert'),
+    simulate:        (payload) => request('POST', '/risk/simulate', payload),
+
+    compareCountries: (isos) => request('GET', `/compare?countries=${isos.join(',')}`),
+
+    getAlerts:     (threshold = 60) => request('GET', `/alerts?threshold=${threshold}`),
+    getAlertStats: ()                => request('GET', '/alerts/stats'),
+  };
+})();
+
+export default API;
