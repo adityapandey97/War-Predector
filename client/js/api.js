@@ -2,7 +2,7 @@
  * GSS-CFS API Service — no authentication headers
  */
 const API = (() => {
-  const BASE = 'http://localhost:4000/api';
+  const BASE = 'https://war-predector.onrender.com/api';
 
   async function request(method, path, body = null) {
     const opts = {
